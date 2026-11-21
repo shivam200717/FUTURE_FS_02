@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact us - demo website form</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #f8f9ff; color: #0b1c30; margin: 0; padding: 32px 16px; }
+      main { max-width: 520px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; }
+      h1 { margin: 0 0 4px; font-size: 22px; }
+      p.sub { margin: 0 0 20px; color: #565e74; font-size: 14px; }
+      label { display: block; font-size: 12px; font-weight: 700; margin: 14px 0 4px; }
+      input, textarea, select { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #dae2fd; border-radius: 8px; background: #eff4ff; font: inherit; font-size: 14px; }
+      textarea { min-height: 90px; resize: vertical; }
+      button { margin-top: 20px; width: 100%; padding: 12px; border: 0; border-radius: 8px; background: #143ee4; color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+      button:disabled { opacity: .6; cursor: default; }
+      #result { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
+      #result.ok { display: block; background: #d9f7e9; color: #005137; }
+      #result.err { display: block; background: #ffdad6; color: #93000a; }
+      .trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Get in touch</h1>
+      <p class="sub">
+        This is a plain HTML page that stands in for your business website. It sends the form to the CRM's public
+        endpoint, exactly like a real site would.
+      </p>
+
+      <form id="lead-form">
+        <label for="name">Full name *</label>
+        <input id="name" name="name" required maxlength="100" />
+
+        <label for="email">Email *</label>
+        <input id="email" name="email" type="email" required maxlength="254" />
+
+        <label for="company">Company</label>
+        <input id="company" name="company" maxlength="120" />
+
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" maxlength="40" />
+
+        <label for="budget">Budget</label>
+        <select id="budget" name="budget">
+          <option>Under $5,000</option>
+          <option selected>$5,000 – $15,000</option>
+          <option>$15,000 – $30,000</option>
+          <option>$30,000+</option>
+        </select>
+
+        <label for="message">How can we help?</label>
+        <textarea id="message" name="message" maxlength="5000"></textarea>
+
+        <!-- spam trap: real visitors never see or fill this -->
+        <input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <button type="submit" id="send">Send message</button>
+      </form>
+      <div id="result" role="status"></div>
+    </main>
+
+    <script>
+      const form = document.getElementById('lead-form');
+      const result = document.getElementById('result');
+      const send = document.getElementById('send');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        send.disabled = true;
+        result.className = '';
+        try {
+          const res = await fetch('/api/contact-inbound', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...Object.fromEntries(new FormData(form)), source: 'Website Contact Form' })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Something went wrong');
+          result.textContent = 'Thank you! Your reference is ' + data.formId + '. We will be in touch soon.';
+          result.className = 'ok';
+          form.reset();
+        } catch (err) {
+          result.textContent = err.message;
+          result.className = 'err';
+        } finally {
+          send.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
