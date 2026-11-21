@@ -136,3 +136,4 @@ tests/             unit tests
 - Rate limiting is in memory (fine for one server instance; use Redis for several).
 - No email notifications yet; new leads show in the dashboard bell and refresh every 30 seconds.
 - Deal value is estimated from the budget the visitor selects; edit it as the deal firms up.
+- Deploy link is this https://future-fs-02-eu84.onrender.com
